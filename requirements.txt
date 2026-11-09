@@ -1,6 +1,6 @@
 streamlit
+streamlit-autorefresh
 pillow
 opencv-python-headless
 numpy
 pandas
-python-dotenv
