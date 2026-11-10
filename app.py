@@ -190,8 +190,8 @@ if uploaded is not None:
         st.subheader("IMAGE PROCESSING RESULTS")
 
         a, b, c = st.columns(3)
-        a.metric("Image Width", f"{width}px")
-        b.metric("Image Height", f"{height}px")
+        a.metric("Image Width", f"{width}")
+        b.metric("Image Height", f"{height}")
         c.metric("Edge Pixels", edge_pixels)
 
         st.success("Image loaded and OpenCV processing completed.")
@@ -200,8 +200,6 @@ if uploaded is not None:
         st.divider()
         st.subheader("TSM TRADER 99 AI SIGNAL ENGINE")
 
-        # Analyze color distribution in the image (Green vs Red candles)
-        # Green channel dominance vs Red channel dominance
         r_channel = image_array[:, :, 0]
         g_channel = image_array[:, :, 1]
         
@@ -219,7 +217,6 @@ if uploaded is not None:
             bullish_ratio = 50.0
             bearish_ratio = 50.0
 
-        # Decision Logic
         if bullish_ratio > bearish_ratio + 3:
             signal = "BUY (CALL)"
             confidence = min(round(50 + (bullish_ratio - bearish_ratio) * 1.5, 2), 94.5)
@@ -236,7 +233,6 @@ if uploaded is not None:
             box_class = "signal-box-buy"
             signal_color = "#ffaa00"
 
-        # Display Signal Output
         st.markdown(f"""
             <div class="{box_class}">
                 <h2 style="color: {signal_color}; margin: 0;">SIGNAL: {signal}</h2>
@@ -245,7 +241,6 @@ if uploaded is not None:
             </div>
         """, unsafe_allow_html=True)
 
-        # Detailed breakdown
         col_m1, col_m2 = st.columns(2)
         col_m1.metric("Bullish Momentum", f"{round(bullish_ratio, 1)}%")
         col_m2.metric("Bearish Momentum", f"{round(bearish_ratio, 1)}%")
