@@ -4,7 +4,6 @@ from streamlit_autorefresh import st_autorefresh
 from PIL import Image
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
-import cv2
 import numpy as np
 import hmac
 
@@ -176,26 +175,6 @@ if uploaded is not None:
             use_container_width=True
         )
 
-        # OpenCV image processing
-        gray = cv2.cvtColor(
-            image_array,
-            cv2.COLOR_RGB2GRAY
-        )
-
-        height, width = gray.shape
-        edges = cv2.Canny(gray, 50, 150)
-        edge_pixels = int(np.count_nonzero(edges))
-
-        st.divider()
-        st.subheader("IMAGE PROCESSING RESULTS")
-
-        a, b, c = st.columns(3)
-        a.metric("Image Width", f"{width}")
-        b.metric("Image Height", f"{height}")
-        c.metric("Edge Pixels", edge_pixels)
-
-        st.success("Image loaded and OpenCV processing completed.")
-
         # ---------- TSM TRADER 99 AI PREDICTION LOGIC ----------
         st.divider()
         st.subheader("TSM TRADER 99 AI SIGNAL ENGINE")
@@ -224,7 +203,7 @@ if uploaded is not None:
             signal_color = "#39ff14"
         elif bearish_ratio > bullish_ratio + 3:
             signal = "SELL (PUT)"
-            confidence = min(round(50 + (bearish_ratio - bullish_ratio) * 1.5, 2), 94.5)
+            confidence = min(round(50 + (bearish_ratio - bearish_ratio) * 1.5, 2), 94.5)
             box_class = "signal-box-sell"
             signal_color = "#ff4d4d"
         else:
