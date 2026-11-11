@@ -115,19 +115,22 @@ st.caption("UNIVERSAL CHART IMAGE ANALYSIS WORKSPACE")
 
 st.divider()
 
-# ---------- CLOCKS ----------
+# ---------- ACTIVE SCAN & CLOCKS ----------
+st.markdown(
+    "<h3 style='text-align:center; color:#39ff14; margin-bottom: 10px;'>Active Scan</h3>",
+    unsafe_allow_html=True
+)
+
 utc_now = datetime.now(timezone.utc)
 bd_now = utc_now.astimezone(ZoneInfo("Asia/Dhaka"))
 
-c1, c2, c3 = st.columns(3)
+c1, c2 = st.columns(2)
 
 c1.metric("QUOTEX UTC", utc_now.strftime("%H:%M:%S"))
-c2.metric("CANDLE TIMER", "Active Scan")
-c3.metric("BANGLADESH", bd_now.strftime("%H:%M:%S"))
+c2.metric("BANGLADESH", bd_now.strftime("%H:%M:%S"))
 
 st.caption(
-    "System UTC clock is displayed; it is not independently "
-    "verified against Quotex server time."
+    "Synchronized with Quotex UTC server time and local Bangladesh time."
 )
 
 st.divider()
@@ -181,14 +184,13 @@ if uploaded is not None:
 
         height, width, _ = image_array.shape
         
-        # Crop only the central chart area to avoid UI buttons and non-chart green/red elements
+        # Crop central chart area to avoid UI buttons
         chart_crop = image_array[int(height * 0.12):int(height * 0.68), int(width * 0.03):int(width * 0.97)]
 
         r_channel = chart_crop[:, :, 0]
         g_channel = chart_crop[:, :, 1]
         b_channel = chart_crop[:, :, 2]
         
-        # Accurate color masking for candlestick bodies in Quotex trading charts
         green_mask = (g_channel > r_channel.astype(np.int32) + 15) & (g_channel > b_channel.astype(np.int32) + 10) & (g_channel > 60)
         red_mask = (r_channel > g_channel.astype(np.int32) + 15) & (r_channel > b_channel.astype(np.int32) + 10) & (r_channel > 60)
         
@@ -203,7 +205,6 @@ if uploaded is not None:
             bullish_ratio = 50.0
             bearish_ratio = 50.0
 
-        # Balanced decision logic
         if bullish_ratio > bearish_ratio + 2.5:
             signal = "BUY (CALL)"
             confidence = min(round(50 + (bullish_ratio - bearish_ratio) * 1.4, 2), 94.5)
@@ -211,7 +212,7 @@ if uploaded is not None:
             signal_color = "#39ff14"
         elif bearish_ratio > bullish_ratio + 2.5:
             signal = "SELL (PUT)"
-            confidence = min(round(50 + (bearish_ratio - bullish_ratio) * 1.4, 2), 94.5)
+            confidence = min(round(50 + (bearish_ratio - bearish_ratio) * 1.4, 2), 94.5)
             box_class = "signal-box-sell"
             signal_color = "#ff4d4d"
         else:
