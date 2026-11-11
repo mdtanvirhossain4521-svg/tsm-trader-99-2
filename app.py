@@ -175,15 +175,22 @@ if uploaded is not None:
             use_container_width=True
         )
 
-        # ---------- TSM TRADER 99 AI PREDICTION LOGIC ----------
+        # ---------- TSM TRADER 99 AI PREDICTION LOGIC (FOCUSED ON CHART AREA) ----------
         st.divider()
         st.subheader("TSM TRADER 99 AI SIGNAL ENGINE")
 
-        r_channel = image_array[:, :, 0]
-        g_channel = image_array[:, :, 1]
+        height, width, _ = image_array.shape
         
-        green_mask = (g_channel > r_channel + 20) & (g_channel > 80)
-        red_mask = (r_channel > g_channel + 20) & (r_channel > 80)
+        # Crop only the central chart area to avoid UI buttons and non-chart green/red elements
+        chart_crop = image_array[int(height * 0.12):int(height * 0.68), int(width * 0.03):int(width * 0.97)]
+
+        r_channel = chart_crop[:, :, 0]
+        g_channel = chart_crop[:, :, 1]
+        b_channel = chart_crop[:, :, 2]
+        
+        # Accurate color masking for candlestick bodies in Quotex trading charts
+        green_mask = (g_channel > r_channel.astype(np.int32) + 15) & (g_channel > b_channel.astype(np.int32) + 10) & (g_channel > 60)
+        red_mask = (r_channel > g_channel.astype(np.int32) + 15) & (r_channel > b_channel.astype(np.int32) + 10) & (r_channel > 60)
         
         green_count = np.sum(green_mask)
         red_count = np.sum(red_mask)
@@ -196,19 +203,20 @@ if uploaded is not None:
             bullish_ratio = 50.0
             bearish_ratio = 50.0
 
-        if bullish_ratio > bearish_ratio + 3:
+        # Balanced decision logic
+        if bullish_ratio > bearish_ratio + 2.5:
             signal = "BUY (CALL)"
-            confidence = min(round(50 + (bullish_ratio - bearish_ratio) * 1.5, 2), 94.5)
+            confidence = min(round(50 + (bullish_ratio - bearish_ratio) * 1.4, 2), 94.5)
             box_class = "signal-box-buy"
             signal_color = "#39ff14"
-        elif bearish_ratio > bullish_ratio + 3:
+        elif bearish_ratio > bullish_ratio + 2.5:
             signal = "SELL (PUT)"
-            confidence = min(round(50 + (bearish_ratio - bearish_ratio) * 1.5, 2), 94.5)
+            confidence = min(round(50 + (bearish_ratio - bullish_ratio) * 1.4, 2), 94.5)
             box_class = "signal-box-sell"
             signal_color = "#ff4d4d"
         else:
             signal = "CONSOLIDATION / WAIT"
-            confidence = 60.0
+            confidence = 58.0
             box_class = "signal-box-buy"
             signal_color = "#ffaa00"
 
@@ -237,4 +245,4 @@ st.divider()
 # ---------- FOOTER ----------
 st.caption(
     "TSM TRADER 99 | Private Chart Analysis Workspace"
-)
+            )
