@@ -184,46 +184,48 @@ if uploaded is not None:
             use_container_width=True
         )
 
-        # ---------- TSM TRADER 99 AI PREDICTION LOGIC (FOCUSED ON CHART AREA) ----------
+        # ---------- TSM TRADER 99 AI PREDICTION LOGIC (BALANCED & ACCURATE) ----------
         st.divider()
         st.subheader("TSM TRADER 99 AI SIGNAL ENGINE")
 
         height, width, _ = image_array.shape
         
-        # Crop central chart area to avoid UI buttons
-        chart_crop = image_array[int(height * 0.12):int(height * 0.68), int(width * 0.03):int(width * 0.97)]
+        # Focus purely on the active candle chart body area
+        chart_crop = image_array[int(height * 0.15):int(height * 0.62), int(width * 0.05):int(width * 0.95)]
 
-        r_channel = chart_crop[:, :, 0]
-        g_channel = chart_crop[:, :, 1]
-        b_channel = chart_crop[:, :, 2]
+        r = chart_crop[:, :, 0].astype(np.int32)
+        g = chart_crop[:, :, 1].astype(np.int32)
+        b = chart_crop[:, :, 2].astype(np.int32)
         
-        green_mask = (g_channel > r_channel.astype(np.int32) + 15) & (g_channel > b_channel.astype(np.int32) + 10) & (g_channel > 60)
-        red_mask = (r_channel > g_channel.astype(np.int32) + 15) & (r_channel > b_channel.astype(np.int32) + 10) & (r_channel > 60)
+        # Refined masks to strictly target true candle body colors and eliminate background bias
+        green_mask = (g > r + 30) & (g > b + 30) & (g > 90)
+        red_mask = (r > g + 30) & (r > b + 20) & (r > 90)
         
         green_count = np.sum(green_mask)
         red_count = np.sum(red_mask)
         total_candles_pixels = green_count + red_count
 
-        if total_candles_pixels > 0:
+        if total_candles_pixels > 100:
             bullish_ratio = (green_count / total_candles_pixels) * 100
             bearish_ratio = (red_count / total_candles_pixels) * 100
         else:
             bullish_ratio = 50.0
             bearish_ratio = 50.0
 
-        if bullish_ratio > bearish_ratio + 2.5:
+        # Fair and balanced decision threshold
+        if bullish_ratio > bearish_ratio + 1.5:
             signal = "BUY (CALL)"
-            confidence = min(round(50 + (bullish_ratio - bearish_ratio) * 1.4, 2), 94.5)
+            confidence = min(round(50 + (bullish_ratio - bearish_ratio) * 1.3, 2), 95.0)
             box_class = "signal-box-buy"
             signal_color = "#39ff14"
-        elif bearish_ratio > bullish_ratio + 2.5:
+        elif bearish_ratio > bullish_ratio + 1.5:
             signal = "SELL (PUT)"
-            confidence = min(round(50 + (bearish_ratio - bearish_ratio) * 1.4, 2), 94.5)
+            confidence = min(round(50 + (bearish_ratio - bullish_ratio) * 1.3, 2), 95.0)
             box_class = "signal-box-sell"
             signal_color = "#ff4d4d"
         else:
             signal = "CONSOLIDATION / WAIT"
-            confidence = 58.0
+            confidence = 55.0
             box_class = "signal-box-buy"
             signal_color = "#ffaa00"
 
