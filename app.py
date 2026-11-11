@@ -124,10 +124,16 @@ st.markdown(
 utc_now = datetime.now(timezone.utc)
 bd_now = utc_now.astimezone(ZoneInfo("Asia/Dhaka"))
 
-c1, c2 = st.columns(2)
+# Live 1-minute candle countdown calculation
+current_sec = bd_now.second
+remaining_sec = 59 - current_sec
+candle_timer_str = f"00:{remaining_sec:02d}"
+
+c1, c2, c3 = st.columns(3)
 
 c1.metric("QUOTEX UTC", utc_now.strftime("%H:%M:%S"))
-c2.metric("BANGLADESH", bd_now.strftime("%H:%M:%S"))
+c2.metric("CANDLE TIMER", candle_timer_str)
+c3.metric("BANGLADESH", bd_now.strftime("%I:%M:%S %p"))
 
 st.caption(
     "Synchronized with Quotex UTC server time and local Bangladesh time."
@@ -246,4 +252,4 @@ st.divider()
 # ---------- FOOTER ----------
 st.caption(
     "TSM TRADER 99 | Private Chart Analysis Workspace"
-            )
+)
